@@ -45,3 +45,14 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
+
+######################################################################
+# Custom - Exclude large installation files
+*.exe
+*.zip
+maven.zip
+jdk-*.exe
+
+# Node.js
+node_modules/
+npm-debug.log*

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBit - 邮箱注册</title>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .register-container {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #333333;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #f0b90b;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0b90b;
+        }
+
+        .settings-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .settings-button:hover {
+            color: #f0b90b;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px 20px 20px;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            color: #f0b90b;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333333;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #f0b90b;
+            box-shadow: 0 0 0 2px rgba(240, 185, 11, 0.2);
+        }
+
+        .input-field::placeholder {
+            color: #888888;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888888;
+            font-size: 16px;
+        }
+
+        .input-field.with-icon {
+            padding-left: 45px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888888;
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #ffffff;
+        }
+
+        .form-buttons {
+            margin-top: 50px;
+        }
+
+        .register-button {
+            width: 100%;
+            padding: 16px;
+            background: #f0b90b;
+            color: #000000;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .register-button:hover {
+            background: #d9a441;
+        }
+
+        .register-button:disabled {
+            background: #666666;
+            cursor: not-allowed;
+        }
+
+        .login-link {
+            text-align: center;
+        }
+
+        .login-link a {
+            color: #f0b90b;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #d9a441;
+            text-decoration: underline;
+        }
+
+        .validation-message {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #f84960;
+        }
+
+        .validation-message.success {
+            color: #02c076;
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 20px 16px;
+            }
+
+            .page-title {
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
+
+            .input-field {
+                padding: 12px 40px 12px 12px;
+                font-size: 14px;
+            }
+
+            .input-field.with-icon {
+                padding-left: 40px;
+            }
+
+            .input-icon {
+                left: 12px;
+                font-size: 14px;
+            }
+
+            .password-toggle {
+                right: 12px;
+                font-size: 14px;
+            }
+        }
+
+        /* 添加加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #666666;
+            border-radius: 50%;
+            border-top-color: #000000;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 悬浮客服按钮 */
+        .floating-customer-service {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .floating-customer-service:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .customer-service-icon {
+            font-size: 28px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="register-container">
+            <!-- 头部导航 -->
+            <header class="header">
+                <button class="back-button" @click="handleBack">←</button>
+                <div class="header-title">CoinBit</div>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="main-content">
+                <h1 class="page-title">Email Register</h1>
+
+                <!-- 注册表单 -->
+                <form @submit.prevent="handleRegister">
+                    <!-- 邮箱部分 -->
+                    <div class="form-section">
+                        <div class="section-title">E-Mail</div>
+                        <div class="input-group">
+                            <span class="input-icon">✉</span>
+                            <input 
+                                type="email" 
+                                class="input-field with-icon"
+                                placeholder="E-Mail"
+                                v-model="registerForm.email"
+                                :class="{ 'error': emailError }"
+                                @blur="validateEmail"
+                                required
+                            >
+                        </div>
+                        <div v-if="emailError" class="validation-message">{{ emailError }}</div>
+                        <div v-if="emailSuccess" class="validation-message success">{{ emailSuccess }}</div>
+                    </div>
+
+                    <!-- 密码部分 -->
+                    <div class="form-section">
+                        <div class="input-group">
+                            <span class="input-icon">🔒</span>
+                            <input 
+                                :type="showPassword ? 'text' : 'password'"
+                                class="input-field with-icon"
+                                placeholder="Enter Password"
+                                v-model="registerForm.password"
+                                :class="{ 'error': passwordError }"
+                                @blur="validatePassword"
+                                required
+                            >
+                            <button 
+                                type="button" 
+                                class="password-toggle"
+                                @click="showPassword = !showPassword"
+                            >
+                                {{ showPassword ? '🙈' : '👁' }}
+                            </button>
+                        </div>
+                        <div v-if="passwordError" class="validation-message">{{ passwordError }}</div>
+                    </div>
+
+                    <!-- 确认密码部分 -->
+                    <div class="form-section">
+                        <div class="input-group">
+                            <span class="input-icon">🔒</span>
+                            <input 
+                                :type="showConfirmPassword ? 'text' : 'password'"
+                                class="input-field with-icon"
+                                placeholder="Reenter Password"
+                                v-model="registerForm.confirmPassword"
+                                :class="{ 'error': confirmPasswordError }"
+                                @blur="validateConfirmPassword"
+                                required
+                            >
+                            <button 
+                                type="button" 
+                                class="password-toggle"
+                                @click="showConfirmPassword = !showConfirmPassword"
+                            >
+                                {{ showConfirmPassword ? '🙈' : '👁' }}
+                            </button>
+                        </div>
+                        <div v-if="confirmPasswordError" class="validation-message">{{ confirmPasswordError }}</div>
+                    </div>
+
+                    <!-- 按钮区域 -->
+                    <div class="form-buttons">
+                        <button 
+                            type="submit" 
+                            class="register-button"
+                            :disabled="!isFormValid || isLoading"
+                        >
+                            <span v-if="isLoading" class="loading"></span>
+                            {{ isLoading ? '注册中...' : 'Register' }}
+                        </button>
+
+                        <div class="login-link">
+                            <a @click="handleLogin">Login</a>
+                        </div>
+                    </div>
+                </form>
+            </main>
+
+            <!-- 悬浮客服按钮 -->
+            <div class="floating-customer-service" @click="handleCustomerService">
+                <div class="customer-service-icon">💬</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                // 表单数据
+                registerForm: {
+                    email: '',
+                    password: '',
+                    confirmPassword: ''
+                },
+                
+                // 显示/隐藏密码
+                showPassword: false,
+                showConfirmPassword: false,
+                
+                // 验证错误信息
+                emailError: '',
+                passwordError: '',
+                confirmPasswordError: '',
+                emailSuccess: '',
+                
+                // 加载状态
+                isLoading: false
+            },
+            
+            computed: {
+                // 表单验证
+                isFormValid() {
+                    return this.registerForm.email && 
+                           this.registerForm.password && 
+                           this.registerForm.confirmPassword &&
+                           !this.emailError && 
+                           !this.passwordError && 
+                           !this.confirmPasswordError;
+                }
+            },
+            
+            methods: {
+                // API接口预留 - 用户注册
+                async handleRegister() {
+                    if (!this.isFormValid) return;
+                    
+                    this.isLoading = true;
+                    
+                    try {
+                        // TODO: 调用注册API
+                        console.log('调用注册API接口:', {
+                            email: this.registerForm.email,
+                            password: this.registerForm.password
+                        });
+                        
+                        // 模拟API调用
+                        await this.simulateApiCall();
+                        
+                        alert('注册成功！注册API接口已预留，待后端开发');
+                        
+                        // 注册成功后可以跳转到登录页面或自动登录
+                        // this.handleLogin();
+                        
+                    } catch (error) {
+                        console.error('注册失败:', error);
+                        alert('注册失败，请稍后重试');
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                // API接口预留 - 邮箱验证
+                async validateEmail() {
+                    const email = this.registerForm.email;
+                    this.emailError = '';
+                    this.emailSuccess = '';
+                    
+                    if (!email) {
+                        this.emailError = '请输入邮箱地址';
+                        return;
+                    }
+                    
+                    // 邮箱格式验证
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        this.emailError = '请输入有效的邮箱地址';
+                        return;
+                    }
+                    
+                    try {
+                        // TODO: 调用邮箱检查API
+                        console.log('调用邮箱验证API接口:', email);
+                        
+                        // 模拟API调用检查邮箱是否已存在
+                        await this.simulateApiCall(500);
+                        
+                        this.emailSuccess = '邮箱地址可用';
+                        
+                    } catch (error) {
+                        console.error('邮箱验证失败:', error);
+                        this.emailError = '邮箱验证失败，请稍后重试';
+                    }
+                },
+                
+                // 密码验证
+                validatePassword() {
+                    const password = this.registerForm.password;
+                    this.passwordError = '';
+                    
+                    if (!password) {
+                        this.passwordError = '请输入密码';
+                        return;
+                    }
+                    
+                    if (password.length < 6) {
+                        this.passwordError = '密码至少需要6位字符';
+                        return;
+                    }
+                    
+                    // 检查密码强度
+                    const hasLetter = /[a-zA-Z]/.test(password);
+                    const hasNumber = /\d/.test(password);
+                    
+                    if (!hasLetter || !hasNumber) {
+                        this.passwordError = '密码需要包含字母和数字';
+                        return;
+                    }
+                },
+                
+                // 确认密码验证
+                validateConfirmPassword() {
+                    const confirmPassword = this.registerForm.confirmPassword;
+                    this.confirmPasswordError = '';
+                    
+                    if (!confirmPassword) {
+                        this.confirmPasswordError = '请确认密码';
+                        return;
+                    }
+                    
+                    if (confirmPassword !== this.registerForm.password) {
+                        this.confirmPasswordError = '两次输入的密码不一致';
+                        return;
+                    }
+                },
+                
+                // API接口预留 - 返回上一页
+                handleBack() {
+                    // TODO: 调用页面导航API
+                    console.log('返回欢迎页面');
+                    window.location.href = 'welcome.html';
+                },
+                
+                // API接口预留 - 跳转登录
+                handleLogin() {
+                    // TODO: 调用登录页面导航API
+                    console.log('跳转到登录页面');
+                    window.location.href = 'login.html';
+                },
+                
+                // 模拟API调用
+                async simulateApiCall(delay = 1000) {
+                    return new Promise(resolve => {
+                        setTimeout(resolve, delay);
+                    });
+                },
+
+                // 悬浮客服按钮
+                handleCustomerService() {
+                    // TODO: 调用客服API获取WhatsApp号码
+                    console.log('打开客服WhatsApp');
+                    // 实际项目中这里会调用API获取后台配置的WhatsApp号码
+                    const whatsappNumber = '+1234567890'; // 这里应该从后台API获取
+                    const message = encodeURIComponent('您好，我需要客服帮助');
+                    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${message}`;
+                    window.open(whatsappUrl, '_blank');
+                    // 实际项目中的API调用示例：
+                    // this.fetchWhatsAppNumber().then(number => {
+                    //     const url = `https://wa.me/${number}?text=${message}`;
+                    //     window.open(url, '_blank');
+                    // });
+                }
+            },
+            
+            mounted() {
+                console.log('注册页面已加载，所有API接口已预留');
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBit - 交易</title>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .top-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid #f0b90b;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #f0b90b;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #d9a441;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f0b90b;
+            letter-spacing: 1px;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.2);
+            min-height: calc(100vh - 130px);
+        }
+
+        /* 左侧价格列表 */
+        .price-list {
+            width: 140px;
+            background: rgba(0, 0, 0, 0.4);
+            border-right: 1px solid #333333;
+            padding: 10px 6px;
+            overflow-y: auto;
+        }
+
+        .currency-pair {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .currency-pair:hover {
+            background: rgba(240, 185, 11, 0.1);
+        }
+
+        .currency-pair.active {
+            background: rgba(240, 185, 11, 0.2);
+            border: 1px solid #f0b90b;
+        }
+
+        .pair-name {
+            font-size: 10px;
+            color: #999999;
+            margin-bottom: 1px;
+        }
+
+        .pair-price {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .price-up {
+            color: #02c076;
+        }
+
+        .price-down {
+            color: #f84960;
+        }
+
+        .pair-change {
+            font-size: 9px;
+            margin-top: 1px;
+        }
+
+        /* 右侧交易面板 */
+        .trading-panel {
+            flex: 1;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 货币对头部 */
+        .pair-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid #333333;
+        }
+
+        .pair-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pair-symbol {
+            font-size: 15px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .pair-dropdown {
+            font-size: 11px;
+            color: #999999;
+        }
+
+        .pair-stats {
+            text-align: right;
+        }
+
+        .current-price {
+            font-size: 13px;
+            font-weight: 600;
+            color: #02c076;
+            margin-bottom: 2px;
+        }
+
+        .price-change {
+            font-size: 11px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .change-up {
+            background: rgba(2, 192, 118, 0.2);
+            color: #02c076;
+        }
+
+        .change-down {
+            background: rgba(248, 73, 96, 0.2);
+            color: #f84960;
+        }
+
+        /* 买涨买跌按钮 */
+        .direction-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .direction-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .direction-btn.rise {
+            background: rgba(2, 192, 118, 0.2);
+            color: #02c076;
+            border: 2px solid #02c076;
+        }
+
+        .direction-btn.rise.active {
+            background: #02c076;
+            color: #ffffff;
+        }
+
+        .direction-btn.fall {
+            background: rgba(248, 73, 96, 0.2);
+            color: #f84960;
+            border: 2px solid #f84960;
+        }
+
+        .direction-btn.fall.active {
+            background: #f84960;
+            color: #ffffff;
+        }
+
+        /* 时间选择 */
+        .time-selection {
+            margin-bottom: 10px;
+        }
+
+        .time-label {
+            font-size: 13px;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .time-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .time-btn {
+            padding: 8px 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333333;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .time-btn:hover {
+            border-color: #f0b90b;
+            background: rgba(240, 185, 11, 0.1);
+        }
+
+        .time-btn.active {
+            background: #f0b90b;
+            color: #000000;
+            border-color: #f0b90b;
+        }
+
+        .time-btn .time-value {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .time-btn .time-earnings {
+            display: block;
+            font-size: 9px;
+            margin-top: 1px;
+        }
+
+        /* 金额输入区域 */
+        .amount-section {
+            margin-bottom: 10px;
+        }
+
+        .amount-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #333333;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #f0b90b;
+            background: rgba(240, 185, 11, 0.05);
+        }
+
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .amount-btn {
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333333;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .amount-btn:hover {
+            border-color: #f0b90b;
+            background: rgba(240, 185, 11, 0.1);
+        }
+
+        .amount-btn.all-in {
+            background: rgba(240, 185, 11, 0.2);
+            border-color: #f0b90b;
+            color: #f0b90b;
+        }
+
+        /* 交易按钮 */
+        .trade-button {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .trade-button.buy-rise {
+            background: #02c076;
+            color: #ffffff;
+        }
+
+        .trade-button.buy-rise:hover {
+            background: #028a5a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(2, 192, 118, 0.3);
+        }
+
+        .trade-button.buy-fall {
+            background: #f84960;
+            color: #ffffff;
+        }
+
+        .trade-button.buy-fall:hover {
+            background: #d63649;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(248, 73, 96, 0.3);
+        }
+
+        /* 余额显示 */
+        .balance-display {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .balance-label {
+            font-size: 11px;
+            color: #999999;
+            margin-bottom: 3px;
+        }
+
+        .balance-amount {
+            font-size: 15px;
+            font-weight: bold;
+            color: #f0b90b;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #333333;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item.active {
+            background: rgba(240, 185, 11, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-icon {
+            color: #999999;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-label {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-label {
+            color: #999999;
+        }
+
+        .nav-item:hover:not(.active) .nav-icon,
+        .nav-item:hover:not(.active) .nav-label {
+            color: #ffffff;
+        }
+
+        /* 交易确认弹出框 */
+        .trade-confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .trade-confirm-dialog {
+            background: #000000;
+            border: 3px solid #f0b90b;
+            border-radius: 8px;
+            padding: 30px 25px;
+            min-width: 300px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .confirm-pair {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        .confirm-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f0b90b;
+            margin-bottom: 20px;
+        }
+
+        .confirm-details {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        .confirm-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .confirm-label {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .confirm-value {
+            color: #f0b90b;
+            font-weight: 600;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .confirm-btn {
+            padding: 12px 30px;
+            border: 2px solid;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .confirm-btn.yes {
+            background: #02c076;
+            border-color: #02c076;
+            color: #ffffff;
+        }
+
+        .confirm-btn.yes:hover {
+            background: #028a5a;
+            border-color: #028a5a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(2, 192, 118, 0.3);
+        }
+
+        .confirm-btn.no {
+            background: transparent;
+            border-color: #666666;
+            color: #ffffff;
+        }
+
+        .confirm-btn.no:hover {
+            background: #666666;
+            border-color: #888888;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 102, 102, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .price-list {
+                width: 100%;
+                height: 120px;
+                display: flex;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 10px;
+            }
+
+            .currency-pair {
+                min-width: 100px;
+                margin-right: 10px;
+                margin-bottom: 0;
+            }
+
+            .trading-panel {
+                padding: 15px;
+            }
+
+            .time-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quick-amounts {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .trade-confirm-dialog {
+                margin: 20px;
+                min-width: auto;
+                width: calc(100% - 40px);
+                max-width: 350px;
+                padding: 25px 20px;
+            }
+
+            .confirm-pair {
+                font-size: 18px;
+            }
+
+            .confirm-price {
+                font-size: 20px;
+            }
+
+            .confirm-buttons {
+                gap: 12px;
+            }
+
+            .confirm-btn {
+                padding: 10px 25px;
+                font-size: 14px;
+                min-width: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <!-- 顶部导航 -->
+            <header class="top-header">
+                <button class="back-button" @click="handleBack">←</button>
+                <div class="logo">coinbit</div>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="main-content">
+                <!-- 左侧价格列表 -->
+                <aside class="price-list">
+                    <div 
+                        v-for="pair in currencyPairs" 
+                        :key="pair.symbol"
+                        class="currency-pair"
+                        :class="{ active: pair.symbol === selectedPair.symbol }"
+                        @click="selectPair(pair)"
+                    >
+                        <div class="pair-name">{{ pair.symbol }}</div>
+                        <div class="pair-price" :class="pair.changeClass">{{ pair.price }}</div>
+                        <div class="pair-change" :class="pair.changeClass">{{ pair.change }}</div>
+                    </div>
+                </aside>
+
+                <!-- 右侧交易面板 -->
+                <section class="trading-panel">
+                    <!-- 货币对头部信息 -->
+                    <div class="pair-header">
+                        <div class="pair-info">
+                            <div class="pair-symbol">{{ selectedPair.symbol }}</div>
+                            <div class="pair-dropdown">{{ selectedPair.volume }}</div>
+                        </div>
+                        <div class="pair-stats">
+                            <div class="current-price" :class="selectedPair.changeClass">{{ selectedPair.price }}</div>
+                            <div class="price-change" :class="selectedPair.changeClass === 'price-up' ? 'change-up' : 'change-down'">
+                                {{ selectedPair.change }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 买涨买跌选择 -->
+                    <div class="direction-buttons">
+                        <button 
+                            class="direction-btn rise"
+                            :class="{ active: tradeDirection === 'rise' }"
+                            @click="setTradeDirection('rise')"
+                        >
+                            Rise
+                        </button>
+                        <button 
+                            class="direction-btn fall"
+                            :class="{ active: tradeDirection === 'fall' }"
+                            @click="setTradeDirection('fall')"
+                        >
+                            Fall
+                        </button>
+                    </div>
+
+                    <!-- 时间选择 -->
+                    <div class="time-selection">
+                        <div class="time-label">选择交易时间</div>
+                        <div class="time-buttons">
+                            <button 
+                                v-for="time in timeOptions"
+                                :key="time.value"
+                                class="time-btn"
+                                :class="{ active: selectedTime === time.value }"
+                                @click="selectTime(time.value)"
+                            >
+                                <span class="time-value">{{ time.label }}</span>
+                                <span class="time-earnings">{{ time.earnings }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 金额输入 -->
+                    <div class="amount-section">
+                        <input 
+                            type="number" 
+                            class="amount-input"
+                            v-model="tradeAmount"
+                            placeholder="输入交易金额"
+                            min="1"
+                            max="50000"
+                        >
+                        
+                        <div class="quick-amounts">
+                            <button 
+                                v-for="amount in quickAmounts"
+                                :key="amount"
+                                class="amount-btn"
+                                :class="{ 'all-in': amount === 'All in' }"
+                                @click="setAmount(amount)"
+                            >
+                                {{ amount }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 交易按钮 -->
+                    <button 
+                        class="trade-button"
+                        :class="tradeDirection === 'rise' ? 'buy-rise' : 'buy-fall'"
+                        @click="executeTrade"
+                        :disabled="!canTrade"
+                    >
+                        {{ tradeDirection === 'rise' ? 'Buy Rise' : 'Buy Fall' }}
+                    </button>
+
+                    <!-- 余额显示 -->
+                    <div class="balance-display">
+                        <div class="balance-label">余额</div>
+                        <div class="balance-amount">{{ userBalance }}</div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- 底部导航 -->
+            <nav class="bottom-nav">
+                <div 
+                    v-for="nav in navItems" 
+                    :key="nav.name"
+                    class="nav-item"
+                    :class="{ active: nav.active }"
+                    @click="handleNavClick(nav)"
+                >
+                    <div class="nav-icon">{{ nav.icon }}</div>
+                    <div class="nav-label">{{ nav.label }}</div>
+                </div>
+            </nav>
+
+            <!-- 交易确认弹出框 -->
+            <div v-if="showConfirmDialog" class="trade-confirm-overlay" @click="closeConfirmDialog">
+                <div class="trade-confirm-dialog" @click.stop>
+                    <div class="confirm-pair">{{ confirmData.pair }}</div>
+                    <div class="confirm-price">{{ confirmData.price }}</div>
+                    
+                    <div class="confirm-details">
+                        <div class="confirm-row">
+                            <span class="confirm-label">交易价格:</span>
+                            <span class="confirm-value">{{ confirmData.price }}</span>
+                        </div>
+                        <div class="confirm-row">
+                            <span class="confirm-label">交易时间:</span>
+                            <span class="confirm-value">{{ confirmData.time }}</span>
+                        </div>
+                        <div class="confirm-row">
+                            <span class="confirm-label">交易金额:</span>
+                            <span class="confirm-value">{{ confirmData.amount }}USDT</span>
+                        </div>
+                    </div>
+                    
+                    <div class="confirm-buttons">
+                        <button class="confirm-btn yes" @click="confirmTrade">YES</button>
+                        <button class="confirm-btn no" @click="closeConfirmDialog">NO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                // 当前选中的货币对
+                selectedPair: {
+                    symbol: 'KERNEL/USDT',
+                    price: '0.1432',
+                    change: '+0.75%',
+                    changeClass: 'price-up',
+                    volume: '4037M'
+                },
+                
+                // 货币对列表
+                currencyPairs: [
+                    { symbol: 'BTC/USDT', price: '0.1438', change: '8.22K', changeClass: 'price-up' },
+                    { symbol: 'ETH/USDT', price: '0.1437', change: '29.07K', changeClass: 'price-down' },
+                    { symbol: 'ADA/USDT', price: '0.1436', change: '9.05K', changeClass: 'price-up' },
+                    { symbol: 'DOT/USDT', price: '0.1435', change: '70.80K', changeClass: 'price-down' },
+                    { symbol: 'SOL/USDT', price: '0.1434', change: '84.78K', changeClass: 'price-up' },
+                    { symbol: 'KERNEL/USDT', price: '0.1432', change: '+0.75%', changeClass: 'price-up' },
+                    { symbol: 'LINK/USDT', price: '0.1431', change: '14.08K', changeClass: 'price-up' },
+                    { symbol: 'UNI/USDT', price: '0.1430', change: '66.48K', changeClass: 'price-down' },
+                    { symbol: 'AVAX/USDT', price: '0.1429', change: '79.77K', changeClass: 'price-up' },
+                    { symbol: 'MATIC/USDT', price: '0.1428', change: '43.31K', changeClass: 'price-down' },
+                    { symbol: 'ALGO/USDT', price: '0.1427', change: '10.10K', changeClass: 'price-up' },
+                    { symbol: 'ATOM/USDT', price: '0.1426', change: '19.90K', changeClass: 'price-down' }
+                ],
+                
+                // 交易方向
+                tradeDirection: 'fall', // 'rise' or 'fall'
+                
+                // 时间选项
+                timeOptions: [
+                    { value: '60s', label: '60s', earnings: 'Earnings+10%' },
+                    { value: '90s', label: '90s', earnings: 'Earnings+15%' },
+                    { value: '120s', label: '120s', earnings: 'Earnings+20%' },
+                    { value: '180s', label: '180s', earnings: 'Earnings+30%' },
+                    { value: '300s', label: '300s', earnings: 'Earnings+50%' },
+                    { value: '600s', label: '600s', earnings: 'Earnings+70%' }
+                ],
+                selectedTime: '180s',
+                
+                // 交易金额
+                tradeAmount: 100,
+                quickAmounts: [100, 1000, 5000, 10000, 50000, 'All in'],
+                
+                // 用户余额
+                userBalance: '251USDT',
+                
+                // 底部导航数据
+                navItems: [
+                    { name: 'home', label: '主页', icon: '🏠', active: false },
+                    { name: 'market', label: '市场', icon: '📊', active: false },
+                    { name: 'trade', label: '交易', icon: '📋', active: true },
+                    { name: 'orders', label: '订单', icon: '📄', active: false },
+                    { name: 'wallet', label: '钱包', icon: '💰', active: false }
+                ],
+                showConfirmDialog: false,
+                confirmData: {}
+            },
+            
+            computed: {
+                // 检查是否可以交易
+                canTrade() {
+                    return this.tradeAmount > 0 && this.tradeAmount <= 50000 && this.selectedTime;
+                }
+            },
+            
+            methods: {
+                // API接口预留 - 返回上一页
+                handleBack() {
+                    console.log('返回上一页');
+                    window.location.href = 'index.html';
+                },
+                
+                // 选择货币对
+                selectPair(pair) {
+                    this.selectedPair = { ...pair };
+                    console.log('选择货币对:', pair.symbol);
+                    // TODO: 调用API获取该货币对的实时数据
+                    // this.fetchPairData(pair.symbol);
+                },
+                
+                // 设置交易方向
+                setTradeDirection(direction) {
+                    this.tradeDirection = direction;
+                    console.log('设置交易方向:', direction);
+                },
+                
+                // 选择交易时间
+                selectTime(time) {
+                    this.selectedTime = time;
+                    console.log('选择交易时间:', time);
+                },
+                
+                // 设置交易金额
+                setAmount(amount) {
+                    if (amount === 'All in') {
+                        // 获取可用余额的数字部分
+                        const balance = parseFloat(this.userBalance.replace('USDT', ''));
+                        this.tradeAmount = balance;
+                    } else {
+                        this.tradeAmount = amount;
+                    }
+                    console.log('设置交易金额:', this.tradeAmount);
+                },
+                
+                // API接口预留 - 执行交易
+                executeTrade() {
+                    if (!this.canTrade) {
+                        alert('请检查交易参数');
+                        return;
+                    }
+                    
+                    // 获取当前时间
+                    const now = new Date();
+                    const timeString = now.getFullYear() + '/' + 
+                                     String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+                                     String(now.getDate()).padStart(2, '0');
+                    
+                    const tradeData = {
+                        pair: this.selectedPair.symbol,
+                        direction: this.tradeDirection,
+                        amount: this.tradeAmount,
+                        time: timeString,
+                        currentPrice: this.selectedPair.price
+                    };
+                    
+                    console.log('准备交易:', tradeData);
+                    
+                    // 显示确认弹出框
+                    this.showConfirmDialog = true;
+                    this.confirmData = {
+                        pair: tradeData.pair,
+                        price: tradeData.currentPrice,
+                        time: tradeData.time,
+                        amount: tradeData.amount
+                    };
+                },
+                
+                // API接口预留 - 获取实时价格数据
+                fetchRealTimeData() {
+                    // TODO: 调用实时数据API
+                    console.log('获取实时价格数据');
+                    // 这里可以使用WebSocket连接获取实时数据
+                },
+                
+                // API接口预留 - 获取货币对数据
+                fetchPairData(symbol) {
+                    // TODO: 调用货币对数据API
+                    console.log('获取货币对数据:', symbol);
+                    // 这里可以获取特定货币对的详细数据
+                },
+                
+                // API接口预留 - 提交交易订单
+                submitTrade(tradeData) {
+                    // TODO: 调用交易提交API
+                    console.log('提交交易订单到服务器:', tradeData);
+                    // 这里可以调用API将交易订单提交给后台处理
+                },
+                
+                // API接口预留 - 底部导航点击
+                handleNavClick(nav) {
+                    // 更新导航状态
+                    this.navItems.forEach(item => {
+                        item.active = item.name === nav.name;
+                    });
+                    
+                    console.log('导航到:', nav.name);
+                    
+                    switch(nav.name) {
+                        case 'home':
+                            window.location.href = 'index.html';
+                            break;
+                        case 'market':
+                            window.location.href = 'market.html';
+                            break;
+                        case 'trade':
+                            // 当前页面，无需跳转
+                            break;
+                        case 'orders':
+                            window.location.href = 'orders.html';
+                            break;
+                        case 'wallet':
+                            window.location.href = 'wallet.html';
+                            break;
+                    }
+                },
+                
+                updatePrices() {
+                    // 模拟价格变化
+                    this.currencyPairs.forEach(pair => {
+                        const change = (Math.random() - 0.5) * 0.0002;
+                        const newPrice = (parseFloat(pair.price) + change).toFixed(4);
+                        pair.price = newPrice;
+                        pair.changeClass = change > 0 ? 'price-up' : 'price-down';
+                    });
+                    
+                    // 更新当前选中货币对的价格
+                    const currentPair = this.currencyPairs.find(p => p.symbol === this.selectedPair.symbol);
+                    if (currentPair) {
+                        this.selectedPair.price = currentPair.price;
+                        this.selectedPair.changeClass = currentPair.changeClass;
+                    }
+                },
+                closeConfirmDialog() {
+                    this.showConfirmDialog = false;
+                },
+                confirmTrade() {
+                    // 构建完整的交易数据
+                    const fullTradeData = {
+                        pair: this.confirmData.pair,
+                        direction: this.tradeDirection,
+                        amount: this.confirmData.amount,
+                        time: this.selectedTime,
+                        currentPrice: this.confirmData.price,
+                        tradeDate: this.confirmData.time
+                    };
+                    
+                    console.log('交易确认:', fullTradeData);
+                    
+                    // TODO: 调用交易API
+                    alert(`交易提交成功！\n` +
+                          `货币对: ${fullTradeData.pair}\n` +
+                          `方向: ${fullTradeData.direction === 'rise' ? '买涨' : '买跌'}\n` +
+                          `金额: ${fullTradeData.amount} USDT\n` +
+                          `交易时长: ${fullTradeData.time}\n` +
+                          `当前价格: ${fullTradeData.currentPrice}`);
+                    
+                    // 实际项目中这里会调用API提交交易订单
+                    // this.submitTrade(fullTradeData);
+                    
+                    // 关闭弹出框
+                    this.closeConfirmDialog();
+                }
+            },
+            
+            mounted() {
+                console.log('CoinBit交易页面已加载，所有API接口已预留');
+                
+                // 启动实时数据获取
+                // this.fetchRealTimeData();
+                
+                // 设置定时器更新价格数据
+                // setInterval(() => {
+                //     this.fetchRealTimeData();
+                // }, 1000); // 每秒更新一次
+                
+                // 模拟价格变化
+                setInterval(() => {
+                    this.updatePrices();
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html> 

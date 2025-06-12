@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBit - 提取资金</title>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .top-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid #f0b90b;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #f0b90b;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #d9a441;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f0b90b;
+            letter-spacing: 1px;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            flex: 1;
+            padding: 30px 20px 100px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 余额显示 */
+        .balance-section {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .balance-label {
+            font-size: 16px;
+            color: #f0b90b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 24px;
+            color: #f0b90b;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* 表单区域 */
+        .form-section {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 16px;
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 15px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #333333;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #f0b90b;
+            background: rgba(240, 185, 11, 0.05);
+        }
+
+        .form-input::placeholder {
+            color: #666666;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23ffffff" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+        }
+
+        /* 地址输入区域 */
+        .address-input-container {
+            position: relative;
+        }
+
+        .address-textarea {
+            width: 100%;
+            padding: 15px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #333333;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            resize: none;
+            height: 80px;
+            line-height: 1.5;
+            font-family: inherit;
+        }
+
+        .address-textarea:focus {
+            outline: none;
+            border-color: #f0b90b;
+            background: rgba(240, 185, 11, 0.05);
+        }
+
+        .address-textarea::placeholder {
+            color: #666666;
+        }
+
+        /* 提交按钮 */
+        .submit-section {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 18px 24px;
+            background: #f0b90b;
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .submit-button:hover:not(:disabled) {
+            background: #d9a441;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(240, 185, 11, 0.3);
+        }
+
+        .submit-button:disabled {
+            background: #333333;
+            color: #666666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #333333;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item.active {
+            background: rgba(240, 185, 11, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-icon {
+            color: #999999;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-label {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-label {
+            color: #999999;
+        }
+
+        .nav-item:hover:not(.active) .nav-icon,
+        .nav-item:hover:not(.active) .nav-label {
+            color: #ffffff;
+        }
+
+        /* 提示信息 */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(2, 192, 118, 0.9);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: rgba(248, 73, 96, 0.9);
+        }
+
+        /* 验证提示 */
+        .validation-message {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #f84960;
+        }
+
+        .validation-message.success {
+            color: #02c076;
+        }
+
+        /* 警告提示 */
+        .warning-notice {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(248, 73, 96, 0.1);
+            border: 2px solid #f84960;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .warning-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .warning-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #ffffff;
+        }
+
+        .warning-text strong {
+            color: #f84960;
+            font-weight: 700;
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 20px 16px 100px;
+            }
+
+            .balance-section,
+            .form-section,
+            .submit-section {
+                max-width: 100%;
+            }
+
+            .balance-amount {
+                font-size: 20px;
+            }
+
+            .form-input,
+            .form-select,
+            .address-textarea {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+
+            .address-textarea {
+                height: 70px;
+            }
+
+            .submit-button {
+                padding: 16px 20px;
+                font-size: 16px;
+            }
+
+            .warning-notice {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .warning-icon {
+                font-size: 18px;
+            }
+
+            .warning-text {
+                font-size: 12px;
+            }
+        }
+
+        /* 悬浮客服按钮 */
+        .floating-customer-service {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .floating-customer-service:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .customer-service-icon {
+            font-size: 28px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <!-- 顶部导航 -->
+            <header class="top-header">
+                <button class="back-button" @click="handleBack">←</button>
+                <div class="logo">coinbit</div>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="main-content">
+                <!-- 余额显示 -->
+                <div class="balance-section">
+                    <div class="balance-label">余额:</div>
+                    <div class="balance-amount">{{ userBalance }}</div>
+                </div>
+
+                <!-- 提取表单 -->
+                <div class="form-section">
+                    <!-- 选择网络 -->
+                    <div class="form-group">
+                        <label class="form-label">选择网络</label>
+                        <select class="form-select" v-model="withdrawForm.network" @change="handleNetworkChange">
+                            <option value="">请选择网络</option>
+                            <option value="USDT-TRC20">USDT-TRC20</option>
+                            <option value="USDT-ERC20">USDT-ERC20</option>
+                            <option value="USDT-BEP20">USDT-BEP20</option>
+                            <option value="BTC">BTC</option>
+                            <option value="ETH">ETH</option>
+                        </select>
+                        <div v-if="networkError" class="validation-message">{{ networkError }}</div>
+                    </div>
+
+                    <!-- 输入您的提现地址 -->
+                    <div class="form-group">
+                        <label class="form-label">输入您的提现地址</label>
+                        <div class="address-input-container">
+                            <textarea 
+                                class="address-textarea"
+                                v-model="withdrawForm.address"
+                                placeholder="请输入您的提现地址"
+                                @blur="validateAddress"
+                            ></textarea>
+                        </div>
+                        <div v-if="addressError" class="validation-message">{{ addressError }}</div>
+                        <div v-if="addressSuccess" class="validation-message success">{{ addressSuccess }}</div>
+                        
+                        <!-- 警告提示 -->
+                        <div class="warning-notice">
+                            <div class="warning-icon">⚠️</div>
+                            <div class="warning-text">
+                                <strong>重要提醒：</strong>请确保您输入的地址正确，请仔细核对您的地址。因地址错误造成的您的资金损失，本公司概不负责。特此声明！！！
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 输入金额 -->
+                    <div class="form-group">
+                        <label class="form-label">输入金额</label>
+                        <input 
+                            type="number" 
+                            class="form-input"
+                            v-model="withdrawForm.amount"
+                            placeholder="请输入提现金额"
+                            min="1"
+                            :max="maxWithdrawAmount"
+                            @blur="validateAmount"
+                        >
+                        <div v-if="amountError" class="validation-message">{{ amountError }}</div>
+                        <div v-if="amountSuccess" class="validation-message success">{{ amountSuccess }}</div>
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="submit-section">
+                    <button 
+                        class="submit-button"
+                        :disabled="!canSubmit"
+                        @click="handleSubmit"
+                    >
+                        提交申请
+                    </button>
+                </div>
+            </main>
+
+            <!-- 底部导航 -->
+            <nav class="bottom-nav">
+                <div 
+                    v-for="nav in navItems" 
+                    :key="nav.name"
+                    class="nav-item"
+                    :class="{ active: nav.active }"
+                    @click="handleNavClick(nav)"
+                >
+                    <div class="nav-icon">{{ nav.icon }}</div>
+                    <div class="nav-label">{{ nav.label }}</div>
+                </div>
+            </nav>
+
+            <!-- 提示信息 -->
+            <div class="toast" :class="{ show: showToast, error: toastType === 'error' }">
+                {{ toastMessage }}
+            </div>
+
+            <!-- 悬浮客服按钮 -->
+            <div class="floating-customer-service" @click="handleCustomerService">
+                <div class="customer-service-icon">💬</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                // 用户余额
+                userBalance: '2542.1 USDT',
+                
+                // 提现表单
+                withdrawForm: {
+                    network: '',
+                    address: '',
+                    amount: ''
+                },
+                
+                // 验证错误信息
+                networkError: '',
+                addressError: '',
+                amountError: '',
+                addressSuccess: '',
+                amountSuccess: '',
+                
+                // 提示信息
+                showToast: false,
+                toastMessage: '',
+                toastType: 'success', // 'success' or 'error'
+                
+                // 底部导航数据
+                navItems: [
+                    { name: 'home', label: '主页', icon: '🏠', active: false },
+                    { name: 'market', label: '市场', icon: '📊', active: false },
+                    { name: 'trade', label: '交易', icon: '📋', active: false },
+                    { name: 'orders', label: '订单', icon: '📄', active: false },
+                    { name: 'wallet', label: '钱包', icon: '💰', active: true }
+                ]
+            },
+            
+            computed: {
+                // 最大提现金额
+                maxWithdrawAmount() {
+                    const balance = parseFloat(this.userBalance.replace(' USDT', ''));
+                    return balance || 0;
+                },
+                
+                // 检查是否可以提交
+                canSubmit() {
+                    return this.withdrawForm.network && 
+                           this.withdrawForm.address && 
+                           this.withdrawForm.amount && 
+                           !this.networkError && 
+                           !this.addressError && 
+                           !this.amountError;
+                }
+            },
+            
+            methods: {
+                // API接口预留 - 返回上一页
+                handleBack() {
+                    console.log('返回钱包页面');
+                    window.location.href = 'wallet.html';
+                },
+                
+                // API接口预留 - 网络切换
+                handleNetworkChange() {
+                    console.log('切换网络:', this.withdrawForm.network);
+                    this.networkError = '';
+                    
+                    if (this.withdrawForm.network) {
+                        // 清空地址，因为不同网络地址格式不同
+                        this.withdrawForm.address = '';
+                        this.addressError = '';
+                        this.addressSuccess = '';
+                    }
+                    
+                    // TODO: 调用API获取对应网络的提现信息
+                    // this.fetchNetworkInfo(this.withdrawForm.network);
+                },
+                
+                // 验证地址
+                validateAddress() {
+                    const address = this.withdrawForm.address.trim();
+                    this.addressError = '';
+                    this.addressSuccess = '';
+                    
+                    if (!address) {
+                        return;
+                    }
+                    
+                    if (!this.withdrawForm.network) {
+                        this.addressError = '请先选择网络';
+                        return;
+                    }
+                    
+                    // 简单的地址格式验证
+                    const network = this.withdrawForm.network;
+                    let isValid = false;
+                    
+                    if (network === 'USDT-TRC20' && address.startsWith('T') && address.length === 34) {
+                        isValid = true;
+                    } else if (network === 'USDT-ERC20' && address.startsWith('0x') && address.length === 42) {
+                        isValid = true;
+                    } else if (network === 'USDT-BEP20' && address.startsWith('0x') && address.length === 42) {
+                        isValid = true;
+                    } else if (network === 'BTC' && (address.startsWith('1') || address.startsWith('3') || address.startsWith('bc1'))) {
+                        isValid = true;
+                    } else if (network === 'ETH' && address.startsWith('0x') && address.length === 42) {
+                        isValid = true;
+                    }
+                    
+                    if (!isValid) {
+                        this.addressError = `请输入有效的${network}地址`;
+                    } else {
+                        this.addressSuccess = '地址格式正确';
+                        // TODO: 调用API验证地址有效性
+                        // this.verifyAddress(address, network);
+                    }
+                },
+                
+                // 验证金额
+                validateAmount() {
+                    const amount = parseFloat(this.withdrawForm.amount);
+                    this.amountError = '';
+                    this.amountSuccess = '';
+                    
+                    if (!this.withdrawForm.amount) {
+                        return;
+                    }
+                    
+                    if (isNaN(amount) || amount <= 0) {
+                        this.amountError = '请输入有效的金额';
+                        return;
+                    }
+                    
+                    if (amount > this.maxWithdrawAmount) {
+                        this.amountError = '提现金额不能超过可用余额';
+                        return;
+                    }
+                    
+                    if (amount < 10) {
+                        this.amountError = '最小提现金额为10 USDT';
+                        return;
+                    }
+                    
+                    this.amountSuccess = '金额有效';
+                },
+                
+                // API接口预留 - 提交提现申请
+                handleSubmit() {
+                    if (!this.canSubmit) {
+                        this.showToastMessage('请完善所有信息', 'error');
+                        return;
+                    }
+                    
+                    // TODO: 调用提现申请API
+                    console.log('提交提现申请:', {
+                        network: this.withdrawForm.network,
+                        address: this.withdrawForm.address,
+                        amount: this.withdrawForm.amount
+                    });
+                    
+                    // 模拟提交成功
+                    this.showToastMessage('提交成功，等待审核', 'success');
+                    
+                    // 清空表单
+                    setTimeout(() => {
+                        this.withdrawForm = {
+                            network: '',
+                            address: '',
+                            amount: ''
+                        };
+                        this.clearValidationMessages();
+                    }, 2000);
+                    
+                    // 实际项目中这里会调用API提交提现申请
+                    // this.submitWithdrawRequest();
+                },
+                
+                // 清空验证信息
+                clearValidationMessages() {
+                    this.networkError = '';
+                    this.addressError = '';
+                    this.amountError = '';
+                    this.addressSuccess = '';
+                    this.amountSuccess = '';
+                },
+                
+                // 显示提示信息
+                showToastMessage(message, type = 'success') {
+                    this.toastMessage = message;
+                    this.toastType = type;
+                    this.showToast = true;
+                    setTimeout(() => {
+                        this.showToast = false;
+                    }, 3000);
+                },
+                
+                // API接口预留 - 底部导航点击
+                handleNavClick(nav) {
+                    // 更新导航状态
+                    this.navItems.forEach(item => {
+                        item.active = item.name === nav.name;
+                    });
+                    
+                    console.log('导航到:', nav.name);
+                    
+                    switch(nav.name) {
+                        case 'home':
+                            window.location.href = 'index.html';
+                            break;
+                        case 'market':
+                            window.location.href = 'market.html';
+                            break;
+                        case 'trade':
+                            window.location.href = 'trade.html';
+                            break;
+                        case 'orders':
+                            window.location.href = 'orders.html';
+                            break;
+                        case 'wallet':
+                            window.location.href = 'wallet.html';
+                            break;
+                    }
+                },
+                
+                // API接口预留 - 获取用户余额
+                fetchUserBalance() {
+                    // TODO: 调用用户余额API
+                    console.log('获取用户余额');
+                    // 实际项目中这里会调用API获取用户的实时余额
+                },
+                
+                // API接口预留 - 获取网络信息
+                fetchNetworkInfo(network) {
+                    // TODO: 调用网络信息API
+                    console.log('获取网络信息:', network);
+                    // 实际项目中这里会调用API获取网络的手续费、最小提现金额等信息
+                },
+                
+                // API接口预留 - 验证地址
+                verifyAddress(address, network) {
+                    // TODO: 调用地址验证API
+                    console.log('验证地址:', address, network);
+                    // 实际项目中这里会调用API验证地址的有效性
+                },
+                
+                // API接口预留 - 提交提现请求
+                submitWithdrawRequest() {
+                    // TODO: 调用提现申请API
+                    console.log('提交提现请求到服务器');
+                    // 实际项目中这里会调用API提交提现申请
+                },
+
+                // API接口预留 - 悬浮客服按钮点击
+                handleCustomerService() {
+                    // TODO: 调用客服API获取WhatsApp号码
+                    console.log('打开客服WhatsApp');
+                    // 实际项目中这里会调用API获取后台配置的WhatsApp号码
+                    const whatsappNumber = '+1234567890'; // 这里应该从后台API获取
+                    const message = encodeURIComponent('您好，我需要客服帮助');
+                    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${message}`;
+                    window.open(whatsappUrl, '_blank');
+                    // 实际项目中的API调用示例：
+                    // this.fetchWhatsAppNumber().then(number => {
+                    //     const url = `https://wa.me/${number}?text=${message}`;
+                    //     window.open(url, '_blank');
+                    // });
+                }
+            },
+            
+            mounted() {
+                console.log('CoinBit提取资金页面已加载，所有API接口已预留');
+                // 页面加载时获取用户余额
+                // this.fetchUserBalance();
+            }
+        });
+    </script>
+</body>
+</html> 

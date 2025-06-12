@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBit - 钱包</title>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid #333333;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #f0b90b;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #d9a441;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f0b90b;
+            letter-spacing: 1px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-button {
+            background: none;
+            border: 1.5px solid #f0b90b;
+            color: #f0b90b;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .auth-button:hover {
+            background: #f0b90b;
+            color: #000000;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(240, 185, 11, 0.3);
+        }
+
+        .auth-button.verified {
+            background: #02c076;
+            border-color: #02c076;
+            color: #ffffff;
+        }
+
+        .auth-button.verified:hover {
+            background: #028a5a;
+            border-color: #028a5a;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            flex: 1;
+            padding: 40px 20px 80px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* 账户信息 */
+        .account-info {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0b90b;
+        }
+
+        .account-label {
+            font-size: 16px;
+            color: #f0b90b;
+            margin-bottom: 8px;
+        }
+
+        .account-email {
+            font-size: 18px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        /* 余额显示 */
+        .balance-section {
+            margin-bottom: 60px;
+            text-align: left;
+        }
+
+        .balance-label {
+            font-size: 18px;
+            color: #f0b90b;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            color: #f0b90b;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* 操作按钮区域 */
+        .actions-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .action-button {
+            padding: 16px 24px;
+            background: transparent;
+            color: #02c076;
+            border: 2px solid #02c076;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .action-button:hover {
+            background: #02c076;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(2, 192, 118, 0.3);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #333333;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item.active {
+            background: rgba(240, 185, 11, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-icon {
+            color: #999999;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-label {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-label {
+            color: #999999;
+        }
+
+        .nav-item:hover:not(.active) .nav-icon,
+        .nav-item:hover:not(.active) .nav-label {
+            color: #ffffff;
+        }
+
+        /* 交易记录区域 */
+        .transaction-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #f0b90b;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .transaction-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333333;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: rgba(240, 185, 11, 0.05);
+            border-color: rgba(240, 185, 11, 0.3);
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .transaction-type {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .transaction-amount {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .amount-positive {
+            color: #02c076;
+        }
+
+        .amount-negative {
+            color: #f84960;
+        }
+
+        .transaction-time {
+            font-size: 12px;
+            color: #999999;
+        }
+
+        .transaction-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .transaction-status {
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .status-success {
+            color: #02c076;
+        }
+
+        .status-approved {
+            color: #02c076;
+        }
+
+        .status-failed {
+            color: #f84960;
+        }
+
+        .status-pending {
+            color: #f0b90b;
+        }
+
+        .status-rejected {
+            color: #f84960;
+        }
+
+        /* 悬浮客服按钮 */
+        .floating-customer-service {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .floating-customer-service:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .customer-service-icon {
+            font-size: 28px;
+            color: #ffffff;
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 30px 16px 80px;
+            }
+
+            .balance-amount {
+                font-size: 28px;
+            }
+
+            .actions-section {
+                max-width: 100%;
+            }
+
+            .action-button {
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+
+            .auth-button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .back-button {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <!-- 顶部导航 -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="back-button" @click="handleBack">←</button>
+                    <div class="logo">coinbit</div>
+                </div>
+                <div class="header-right">
+                    <button 
+                        class="auth-button" 
+                        :class="{ verified: userInfo.isVerified }"
+                        @click="handleAuthentication"
+                    >
+                        {{ userInfo.isVerified ? '已认证' : '身份认证' }}
+                    </button>
+                </div>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="main-content">
+                <!-- 账户信息 -->
+                <div class="account-info">
+                    <div class="account-label">客户: {{ userInfo.email }}</div>
+                </div>
+
+                <!-- 余额显示 -->
+                <div class="balance-section">
+                    <div class="balance-label">余额: {{ userInfo.balance }}</div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="actions-section">
+                    <button class="action-button" @click="handleDeposit">充值</button>
+                    <button class="action-button" @click="handleWithdraw">提取资金</button>
+                </div>
+
+                <!-- 最近交易记录 -->
+                <div class="transaction-section">
+                    <div class="section-title">最近交易</div>
+                    <div v-if="transactionList.length > 0">
+                        <div 
+                            v-for="transaction in transactionList" 
+                            :key="transaction.id"
+                            class="transaction-item"
+                        >
+                            <div class="transaction-header">
+                                <div class="transaction-type">{{ transaction.type }}</div>
+                                <div class="transaction-amount" :class="transaction.amountClass">
+                                    {{ transaction.amount }}
+                                </div>
+                            </div>
+                            <div class="transaction-footer">
+                                <div class="transaction-time">{{ transaction.time }}</div>
+                                <div class="transaction-status" :class="transaction.statusClass">
+                                    {{ transaction.status }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else style="text-align: center; color: #999999; padding: 20px;">
+                        暂无交易记录
+                    </div>
+                </div>
+            </main>
+
+            <!-- 底部导航 -->
+            <nav class="bottom-nav">
+                <div 
+                    v-for="nav in navItems" 
+                    :key="nav.name"
+                    class="nav-item"
+                    :class="{ active: nav.active }"
+                    @click="handleNavClick(nav)"
+                >
+                    <div class="nav-icon">{{ nav.icon }}</div>
+                    <div class="nav-label">{{ nav.label }}</div>
+                </div>
+            </nav>
+
+            <!-- 悬浮客服按钮 -->
+            <div class="floating-customer-service" @click="handleCustomerService">
+                <div class="customer-service-icon">💬</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                // 用户信息
+                userInfo: {
+                    email: '2123@gmail.com',
+                    balance: '12USDT',
+                    isVerified: false
+                },
+                
+                // 交易记录
+                transactionList: [
+                    {
+                        id: 1,
+                        type: '充值',
+                        amount: '+100.00 USDT',
+                        amountClass: 'amount-positive',
+                        status: '成功',
+                        statusClass: 'status-success',
+                        time: '2024-12-04 14:30:25'
+                    },
+                    {
+                        id: 2,
+                        type: '充值',
+                        amount: '+200.00 USDT',
+                        amountClass: 'amount-positive',
+                        status: '失败',
+                        statusClass: 'status-failed',
+                        time: '2024-12-04 10:20:15'
+                    },
+                    {
+                        id: 3,
+                        type: '充值',
+                        amount: '+150.00 USDT',
+                        amountClass: 'amount-positive',
+                        status: '待审核',
+                        statusClass: 'status-pending',
+                        time: '2024-12-03 16:45:30'
+                    },
+                    {
+                        id: 4,
+                        type: '充值',
+                        amount: '+300.00 USDT',
+                        amountClass: 'amount-positive',
+                        status: '成功',
+                        statusClass: 'status-success',
+                        time: '2024-12-02 18:15:20'
+                    },
+                    {
+                        id: 5,
+                        type: '充值',
+                        amount: '+80.00 USDT',
+                        amountClass: 'amount-positive',
+                        status: '失败',
+                        statusClass: 'status-failed',
+                        time: '2024-12-02 09:30:42'
+                    }
+                ],
+                
+                // 底部导航数据
+                navItems: [
+                    { name: 'home', label: '主页', icon: '🏠', active: false },
+                    { name: 'market', label: '市场', icon: '📊', active: false },
+                    { name: 'trade', label: '交易', icon: '📋', active: false },
+                    { name: 'orders', label: '订单', icon: '📄', active: false },
+                    { name: 'wallet', label: '钱包', icon: '💰', active: true }
+                ]
+            },
+            
+            methods: {
+                // API接口预留 - 返回上一页
+                handleBack() {
+                    // TODO: 调用页面导航API
+                    console.log('返回上一页');
+                    window.location.href = 'index.html';
+                },
+                
+                // API接口预留 - 充值
+                handleDeposit() {
+                    // TODO: 调用充值API
+                    console.log('充值功能');
+                    window.location.href = 'deposit.html';
+                },
+                
+                // API接口预留 - 提取资金
+                handleWithdraw() {
+                    // TODO: 调用提现API
+                    console.log('提取资金功能');
+                    window.location.href = 'withdraw.html';
+                    // 实际项目中可以跳转到提现页面
+                },
+                
+                // API接口预留 - 底部导航点击
+                handleNavClick(nav) {
+                    // 更新导航状态
+                    this.navItems.forEach(item => {
+                        item.active = item.name === nav.name;
+                    });
+                    
+                    // TODO: 调用页面跳转API
+                    console.log('导航到:', nav.name);
+                    
+                    switch(nav.name) {
+                        case 'home':
+                            window.location.href = 'index.html';
+                            break;
+                        case 'market':
+                            window.location.href = 'market.html';
+                            break;
+                        case 'trade':
+                            window.location.href = 'trade.html';
+                            break;
+                        case 'orders':
+                            window.location.href = 'orders.html';
+                            break;
+                        case 'wallet':
+                            // 当前页面，无需跳转
+                            break;
+                    }
+                },
+                
+                // API接口预留 - 获取用户余额
+                fetchUserBalance() {
+                    // TODO: 调用用户余额API
+                    console.log('获取用户余额');
+                    // 这里可以调用API获取用户的实时余额
+                },
+                
+                // API接口预留 - 获取交易记录
+                fetchTransactionHistory() {
+                    // TODO: 调用交易记录API
+                    console.log('获取交易记录');
+                    // 这里可以调用API获取用户的交易历史
+                    // 支持分页、筛选等功能
+                },
+                
+                // API接口预留 - 刷新余额
+                refreshBalance() {
+                    // TODO: 调用余额刷新API
+                    console.log('刷新余额');
+                    // 实际项目中这里会调用API更新最新余额
+                },
+                
+                // API接口预留 - 身份认证
+                handleAuthentication() {
+                    // TODO: 调用身份认证API
+                    console.log('身份认证');
+                    // 实际项目中可以跳转到身份认证页面
+                    window.location.href = 'authentication.html';
+                },
+
+                // API接口预留 - 检查身份认证状态
+                checkAuthenticationStatus() {
+                    // TODO: 调用身份认证状态检查API
+                    console.log('检查身份认证状态');
+                    // 这里可以调用API检查用户的身份认证状态
+                },
+
+                // API接口预留 - 悬浮客服按钮点击
+                handleCustomerService() {
+                    // TODO: 调用客服API获取WhatsApp号码
+                    console.log('打开客服WhatsApp');
+                    // 实际项目中这里会调用API获取后台配置的WhatsApp号码
+                    const whatsappNumber = '+1234567890'; // 这里应该从后台API获取
+                    const message = encodeURIComponent('您好，我需要客服帮助');
+                    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${message}`;
+                    window.open(whatsappUrl, '_blank');
+                    // 实际项目中的API调用示例：
+                    // this.fetchWhatsAppNumber().then(number => {
+                    //     const url = `https://wa.me/${number}?text=${message}`;
+                    //     window.open(url, '_blank');
+                    // });
+                }
+            },
+            
+            mounted() {
+                console.log('CoinBit钱包页面已加载，所有API接口已预留');
+                // 页面加载时获取用户数据
+                // this.fetchUserBalance();
+                // this.fetchTransactionHistory();
+                // this.checkAuthenticationStatus();
+                
+                // 可以设置定时刷新余额
+                // setInterval(() => {
+                //     this.refreshBalance();
+                // }, 30000); // 每30秒刷新一次
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBit - 数字货币交易平台</title>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f0b90b;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #f84960;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            color: #ff6b6b;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+        }
+
+        /* 背景图片区域 */
+        .crypto-banner {
+            height: 200px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .crypto-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><circle cx="100" cy="100" r="30" fill="%23f0b90b" opacity="0.3"/><circle cx="300" cy="80" r="25" fill="%23ffffff" opacity="0.2"/><circle cx="200" cy="120" r="20" fill="%2300d4ff" opacity="0.4"/><text x="150" y="60" font-family="Arial" font-size="24" fill="%23ffffff" opacity="0.6">₿</text><text x="80" y="140" font-family="Arial" font-size="20" fill="%23f0b90b" opacity="0.5">Ξ</text></svg>') center/cover;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .banner-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .banner-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* 价格滚动条 */
+        .price-ticker {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 1px solid #333333;
+        }
+
+        .ticker-content {
+            display: inline-block;
+            animation: scroll-left 30s linear infinite;
+        }
+
+        .ticker-item {
+            display: inline-block;
+            margin-right: 40px;
+            font-size: 14px;
+        }
+
+        .ticker-symbol {
+            color: #ffffff;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .ticker-change {
+            margin-right: 8px;
+        }
+
+        .ticker-change.positive {
+            color: #02c076;
+        }
+
+        .ticker-change.negative {
+            color: #f84960;
+        }
+
+        .ticker-price {
+            color: #999999;
+            font-size: 12px;
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translate3d(100%, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* 币种列表 */
+        .crypto-list {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .section-header {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .crypto-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #333333;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+
+        .crypto-item:hover {
+            background: rgba(240, 185, 11, 0.05);
+        }
+
+        .crypto-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: #ffffff;
+            position: relative;
+        }
+
+        .btc { background: #f7931a; }
+        .eth { background: #627eea; }
+        .bnb { background: #f3ba2f; }
+        .sol { background: #9945ff; }
+        .pepe { background: #02c076; }
+        .doge { background: #c2a633; }
+
+        .hot-icon {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            font-size: 12px;
+        }
+
+        .crypto-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .crypto-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .crypto-fullname {
+            color: #999999;
+            font-size: 12px;
+        }
+
+        .crypto-price {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-main {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .price-usd {
+            color: #999999;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .price-change {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .price-change.positive {
+            background: #02c076;
+            color: #ffffff;
+        }
+
+        .price-change.negative {
+            background: #f84960;
+            color: #ffffff;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #333333;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item.active {
+            background: rgba(240, 185, 11, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-icon {
+            color: #999999;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item.active .nav-label {
+            color: #f0b90b;
+        }
+
+        .nav-item:not(.active) .nav-label {
+            color: #999999;
+        }
+
+        .nav-item:hover:not(.active) .nav-icon,
+        .nav-item:hover:not(.active) .nav-label {
+            color: #ffffff;
+        }
+
+        /* 悬浮客服按钮 */
+        .floating-customer-service {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .floating-customer-service:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .customer-service-icon {
+            font-size: 28px;
+            color: #ffffff;
+        }
+
+        @media (max-width: 480px) {
+            .crypto-banner {
+                height: 160px;
+            }
+
+            .banner-title {
+                font-size: 24px;
+            }
+
+            .banner-subtitle {
+                font-size: 14px;
+            }
+
+            .crypto-list {
+                padding: 16px;
+            }
+
+            .crypto-item {
+                padding: 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <!-- 顶部导航 -->
+            <header class="top-header">
+                <div class="logo">coinbit</div>
+                <button class="logout-btn" @click="handleLogout">退出</button>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="main-content">
+                <!-- 背景横幅 -->
+                <div class="crypto-banner">
+                    <div class="banner-content">
+                        <div class="banner-title">数字货币交易</div>
+                        <div class="banner-subtitle">专业·安全·便捷</div>
+                    </div>
+                </div>
+
+                <!-- 价格滚动条 -->
+                <div class="price-ticker">
+                    <div class="ticker-content">
+                        <span 
+                            v-for="ticker in tickerData" 
+                            :key="ticker.symbol"
+                            class="ticker-item"
+                        >
+                            <span class="ticker-symbol">{{ ticker.symbol }}</span>
+                            <span class="ticker-change" :class="ticker.changeClass">{{ ticker.change }}</span>
+                            <span class="ticker-price">${{ ticker.price }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 币种列表 -->
+                <div class="crypto-list">
+                    <div class="section-header">各币</div>
+                    <div 
+                        v-for="crypto in cryptoList" 
+                        :key="crypto.symbol"
+                        class="crypto-item"
+                        @click="handleCryptoClick(crypto)"
+                    >
+                        <div class="crypto-icon" :class="crypto.symbol.toLowerCase()">
+                            {{ crypto.symbol }}
+                            <span v-if="crypto.isHot" class="hot-icon">🔥</span>
+                        </div>
+                        <div class="crypto-info">
+                            <div class="crypto-name">{{ crypto.symbol }}</div>
+                            <div class="crypto-fullname">{{ crypto.fullName }}</div>
+                        </div>
+                        <div class="crypto-price">
+                            <div class="price-main">{{ crypto.price }}</div>
+                            <div class="price-usd">${{ crypto.priceUsd }}</div>
+                            <div class="price-change" :class="crypto.changeClass">{{ crypto.change }}</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 底部导航 -->
+            <nav class="bottom-nav">
+                <div 
+                    v-for="nav in navItems" 
+                    :key="nav.name"
+                    class="nav-item"
+                    :class="{ active: nav.active }"
+                    @click="handleNavClick(nav)"
+                >
+                    <div class="nav-icon">{{ nav.icon }}</div>
+                    <div class="nav-label">{{ nav.label }}</div>
+                </div>
+            </nav>
+
+            <!-- 悬浮客服按钮 -->
+            <div class="floating-customer-service" @click="handleCustomerService">
+                <div class="customer-service-icon">💬</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                // 价格滚动数据
+                tickerData: [
+                    {
+                        symbol: 'BTC/USDT',
+                        change: '-0.09%',
+                        changeClass: 'negative',
+                        price: '96920.10'
+                    },
+                    {
+                        symbol: 'ETH/USDT',
+                        change: '-4.78%',
+                        changeClass: 'negative',
+                        price: '4697.91'
+                    },
+                    {
+                        symbol: 'LTC/USDT',
+                        change: '-2.60%',
+                        changeClass: 'negative',
+                        price: '130.38'
+                    },
+                    {
+                        symbol: 'BNB/USDT',
+                        change: '+0.85%',
+                        changeClass: 'positive',
+                        price: '671.57'
+                    },
+                    {
+                        symbol: 'SOL/USDT',
+                        change: '+3.51%',
+                        changeClass: 'positive',
+                        price: '164.64'
+                    }
+                ],
+                
+                // 币种列表数据
+                cryptoList: [
+                    {
+                        symbol: 'BNB',
+                        fullName: 'BNB',
+                        price: '671.57',
+                        priceUsd: '671.57',
+                        change: '+0.85%',
+                        changeClass: 'positive',
+                        isHot: true
+                    },
+                    {
+                        symbol: 'BTC',
+                        fullName: 'Bitcoin',
+                        price: '109,985.67',
+                        priceUsd: '109,985.67',
+                        change: '+0.16%',
+                        changeClass: 'positive',
+                        isHot: true
+                    },
+                    {
+                        symbol: 'ETH',
+                        fullName: 'Ethereum',
+                        price: '2,801.63',
+                        priceUsd: '2,801.63',
+                        change: '+6.01%',
+                        changeClass: 'positive',
+                        isHot: true
+                    },
+                    {
+                        symbol: 'SOL',
+                        fullName: 'Solana',
+                        price: '164.64',
+                        priceUsd: '164.64',
+                        change: '+3.51%',
+                        changeClass: 'positive',
+                        isHot: false
+                    },
+                    {
+                        symbol: 'PEPE',
+                        fullName: 'Pepe',
+                        price: '0.00001300',
+                        priceUsd: '0.00001300',
+                        change: '+4.50%',
+                        changeClass: 'positive',
+                        isHot: false
+                    },
+                    {
+                        symbol: 'DOGE',
+                        fullName: 'Dogecoin',
+                        price: '0.19568',
+                        priceUsd: '0.19568',
+                        change: '+0.92%',
+                        changeClass: 'positive',
+                        isHot: false
+                    }
+                ],
+                
+                // 底部导航数据
+                navItems: [
+                    { name: 'home', label: '主页', icon: '🏠', active: true },
+                    { name: 'market', label: '市场', icon: '📊', active: false },
+                    { name: 'trade', label: '交易', icon: '📋', active: false },
+                    { name: 'orders', label: '订单', icon: '📄', active: false },
+                    { name: 'wallet', label: '钱包', icon: '💰', active: false }
+                ]
+            },
+            
+            methods: {
+                // API接口预留 - 退出登录
+                handleLogout() {
+                    // TODO: 调用退出登录API
+                    console.log('调用退出登录API接口');
+                    if (confirm('确定要退出登录吗？')) {
+                        // 清除登录状态并跳转到欢迎页面
+                        console.log('退出登录，跳转到欢迎页面');
+                        window.location.href = 'welcome.html';
+                        // 实际项目中可以清除token
+                        // localStorage.removeItem('token');
+                    }
+                },
+                
+                // API接口预留 - 币种点击
+                handleCryptoClick(crypto) {
+                    // TODO: 调用币种详情API
+                    console.log('选择币种进行交易:', crypto);
+                    // 跳转到交易界面，并传递选中的币种信息
+                    window.location.href = `trade.html?symbol=${crypto.symbol}`;
+                },
+                
+                // API接口预留 - 底部导航点击
+                handleNavClick(nav) {
+                    // 更新导航状态
+                    this.navItems.forEach(item => {
+                        item.active = item.name === nav.name;
+                    });
+                    
+                    // TODO: 调用页面跳转API
+                    console.log('导航到:', nav.name);
+                    
+                    switch(nav.name) {
+                        case 'home':
+                            // 当前页面，无需跳转
+                            break;
+                        case 'market':
+                            window.location.href = 'market.html';
+                            break;
+                        case 'trade':
+                            window.location.href = 'trade.html';
+                            break;
+                        case 'orders':
+                            window.location.href = 'orders.html';
+                            break;
+                        case 'wallet':
+                            window.location.href = 'wallet.html';
+                            break;
+                    }
+                },
+                
+                // API接口预留 - 获取实时币价数据
+                fetchRealTimeData() {
+                    // TODO: 调用实时币价API
+                    console.log('获取实时币价数据');
+                    // 这里可以调用WebSocket或定时API获取最新币价
+                    // setInterval(() => {
+                    //     this.updateCryptoPrices();
+                    // }, 5000);
+                },
+                
+                // API接口预留 - 更新币价数据
+                updateCryptoPrices() {
+                    // TODO: 调用价格更新API
+                    console.log('更新币价数据');
+                    // 实际项目中这里会调用API更新价格
+                },
+
+                // API接口预留 - 悬浮客服按钮点击
+                handleCustomerService() {
+                    // TODO: 调用客服API获取WhatsApp号码
+                    console.log('打开客服WhatsApp');
+                    // 实际项目中这里会调用API获取后台配置的WhatsApp号码
+                    const whatsappNumber = '+1234567890'; // 这里应该从后台API获取
+                    const message = encodeURIComponent('您好，我需要客服帮助');
+                    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${message}`;
+                    window.open(whatsappUrl, '_blank');
+                    // 实际项目中的API调用示例：
+                    // this.fetchWhatsAppNumber().then(number => {
+                    //     const url = `https://wa.me/${number}?text=${message}`;
+                    //     window.open(url, '_blank');
+                    // });
+                }
+            },
+            
+            mounted() {
+                console.log('CoinBit主页已加载，所有API接口已预留');
+                // 页面加载时获取实时数据
+                // this.fetchRealTimeData();
+            }
+        });
+    </script>
+</body>
+</html> 
